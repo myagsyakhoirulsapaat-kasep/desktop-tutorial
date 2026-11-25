@@ -1,0 +1,195 @@
+
+/* Mengatur semua elemen */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: black;
+
+    /* Background gradasi */
+    background: linear-gradient(
+        to bottom,
+        #4b98df,
+        #78a9d4,
+        #c4c4c4
+    );
+}
+
+/* Navbar */
+.navbar {
+    height: 47px;
+    padding: 0 6.1%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: #315db5;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 23px;
+}
+
+.navbar nav {
+    display: flex;
+    gap: 32px;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+}
+
+/* Konten utama */
+.container {
+    position: relative;
+    min-height: calc(100vh - 47px);
+    padding: 31px 5.3% 35px;
+    overflow: hidden;
+}
+
+/* Judul utama */
+.page-title {
+    width: fit-content;
+    margin: 0 auto 25px;
+    padding: 17px 23px;
+
+    border-radius: 50px;
+    background-color: #4774ce;
+
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Judul materi */
+h1 {
+    display: table;
+    margin: 0 0 48px;
+
+    padding-bottom: 2px;
+    border-bottom: 4px solid black;
+
+    color: white;
+    font-size: 30px;
+    font-weight: normal;
+}
+
+/* Tulisan Arab */
+.arabic {
+    margin: 0 0 20px;
+
+    font-family: "Times New Roman", serif;
+    font-size: 29px;
+    line-height: 1.8;
+    text-align: right;
+}
+
+/* Terjemahan */
+.translation {
+    max-width: 100%;
+    margin: 0;
+
+    font-size: 23px;
+    line-height: 1.25;
+
+    text-decoration: underline;
+    text-decoration-color: #168fe8;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+
+.translation strong {
+    font-weight: normal;
+    text-decoration: none;
+}
+
+/* Gambar ilustrasi */
+.illustration {
+    position: absolute;
+    z-index: 0;
+
+    width: min(48%, 520px);
+    height: auto;
+
+    right: 4.5%;
+    bottom: 0;
+
+    object-fit: contain;
+}
+
+/* Sumber gambar */
+.source {
+    position: absolute;
+    z-index: 2;
+
+    left: 21.4%;
+    bottom: 34px;
+
+    font-size: 11px;
+}
+
+/* Tampilan HP */
+@media (max-width: 700px) {
+
+    .navbar {
+        height: auto;
+        min-height: 48px;
+        padding: 13px 5%;
+    }
+
+    .navbar a {
+        font-size: 16px;
+    }
+
+    .navbar nav {
+        gap: 17px;
+    }
+
+    .container {
+        min-height: calc(100vh - 48px);
+        padding: 25px 5% 280px;
+    }
+
+    .page-title {
+        margin-bottom: 25px;
+        padding: 13px 18px;
+        font-size: 25px;
+    }
+
+    h1 {
+        margin-bottom: 25px;
+        font-size: 22px;
+    }
+
+    .arabic {
+        font-size: 23px;
+    }
+
+    .translation {
+        font-size: 17px;
+    }
+
+    .illustration {
+        width: min(90%, 420px);
+        right: 3%;
+        bottom: 12px;
+    }
+
+    .source {
+        left: 5%;
+        bottom: 8px;
+        font-size: 9px;
+    }
+}
