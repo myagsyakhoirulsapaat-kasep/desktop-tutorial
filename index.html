@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading...</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#0a0a0a; color:#0f0; font-family: monospace;
+    height:100vh; display:flex; justify-content:center; align-items:center;
+    flex-direction:column; overflow:hidden;
+  }
+  #stage { text-align:center; padding:20px; }
+  #msg { font-size:1.3rem; margin-bottom:20px; text-shadow:0 0 10px #0f0; min-height:1.5em; }
+  #bar-wrap { width:80vw; max-width:500px; height:24px; border:2px solid #0f0; border-radius:4px; padding:2px; }
+  #bar { height:100%; width:0%; background:#0f0; box-shadow:0 0 12px #0f0; transition: width .1s linear; }
+  #pct { margin-top:10px; font-size:1rem; }
+
+  #scare {
+    position:fixed; inset:0; background:#000; display:none;
+    justify-content:center; align-items:center; z-index:999;
+  }
+  #scare svg { width:100vw; height:100vh; animation: shake .07s infinite; }
+  @keyframes shake {
+    0%   { transform: translate(3px, 3px) scale(1.08); }
+    50%  { transform: translate(-3px, -3px) scale(1.08); }
+    100% { transform: translate(3px, 3px) scale(1.08); }
+  }
+
+  #overlay {
+    position:fixed; inset:0; background:#000; z-index:1000;
+    display:flex; justify-content:center; align-items:center;
+    color:#0f0; font-family:monospace; font-size:1.2rem;
+    cursor:pointer; text-align:center; padding:20px;
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="msg">Mengunduh file rahasia... jangan tutup halaman ini</div>
+  <div id="bar-wrap"><div id="bar"></div></div>
+  <div id="pct">0%</div>
+</div>
+
+<div id="scare">
+  <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+    <rect width="400" height="400" fill="#000"/>
+    <ellipse cx="200" cy="215" rx="135" ry="165" fill="#eaeaea"/>
+    <ellipse cx="150" cy="170" rx="38" ry="48" fill="#000"/>
+    <ellipse cx="250" cy="170" rx="38" ry="48" fill="#000"/>
+    <circle cx="160" cy="180" r="9" fill="#f00"/>
+    <circle cx="240" cy="180" r="9" fill="#f00"/>
+    <path d="M115 285 Q200 375 285 285 Q200 330 115 285 Z" fill="#2a0000"/>
+    <path d="M125 290 L150 272 L172 295 L194 272 L216 295 L238 272 L260 295 L280 280"
+          stroke="#fff" stroke-width="6" fill="none" stroke-linejoin="round"/>
+    <path d="M158 205 L164 275 L170 215 Z" fill="#9a0000"/>
+    <path d="M232 205 L238 270 L244 210 Z" fill="#9a0000"/>
+    <path d="M200 350 L200 400 L204 400 L204 350 Z" fill="#9a0000"/>
+  </svg>
+</div>
+
+<div id="overlay">Klik di mana saja untuk memulai...</div>
+
+<script>
+  const bar   = document.getElementById('bar');
+  const pct   = document.getElementById('pct');
+  const msg   = document.getElementById('msg');
+  const scare = document.getElementById('scare');
+  const overlay = document.getElementById('overlay');
+
+  let audioCtx = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  /* Suara "teriakan" dibuat sintetis pakai WebAudio — tanpa file eksternal */
+  function playScreech() {
+    initAudio();
+    const t = audioCtx.currentTime;
+
+    // 1) Noise burst
+    const size = audioCtx.sampleRate * 1.2;
+    const buffer = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < size; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / size, 1.5);
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const hp = audioCtx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 800;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.9, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+    noise.connect(hp).connect(g1).connect(audioCtx.destination);
+    noise.start(t);
+
+    // 2) Nada melengking turun
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(1200, t);
+    osc.frequency.exponentialRampToValueAtTime(280, t + 0.85);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.3, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.95);
+    osc.connect(g2).connect(audioCtx.destination);
+    osc.start(t);
+    osc.stop(t + 0.95);
+  }
+
+  function startPrank() {
+    let fake = 0;
+    const interval = setInterval(() => {
+      fake += Math.random() * 6 + 1;
+      if (fake >= 100) {
+        fake = 100;
+        bar.style.width = '100%';
+        pct.textContent = '100%';
+        clearInterval(interval);
+        setTimeout(triggerScare, 450);
+        return;
+      }
+      bar.style.width = fake + '%';
+      pct.textContent = Math.floor(fake) + '%';
+      if (fake > 70) msg.textContent = 'Hampir selesai... jangan ke mana-mana';
+      if (fake > 90) msg.textContent = 'Membuka file...';
+    }, 120 + Math.random() * 80);
+  }
+
+  function triggerScare() {
+    scare.style.display = 'flex';
+    playScreech();
+    if (navigator.vibrate) navigator.vibrate([120, 60, 120, 60, 350]);
+
+    // Auto selesai setelah 2.5 detik, biar nggak bikin panik kelamaan
+    setTimeout(() => {
+      scare.style.display = 'none';
+      document.body.innerHTML =
+        '<div style="color:#0f0;font-family:monospace;text-align:center;padding:20px;font-size:1.2rem;">' +
+        'Ketahuan deh!! Ini cuma prank.<br><br>' +
+        '<a href="" style="color:#0ff;">Ulangi</a></div>';
+    }, 2500);
+  }
+
+  overlay.addEventListener('click', () => {
+    overlay.remove();
+    initAudio();          // buka AudioContext setelah gesture user (iOS/Safari wajib)
+    startPrank();
+  });
+</script>
+</body>
+</html>
